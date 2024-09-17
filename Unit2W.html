@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CS4406 Assignment 2 - Polygon with 5 Vertices</title>
+    <style>
+        body { margin: 0; }
+        canvas { display: block; }
+    </style>
+</head>
+<body>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
+    <script>
+        // Set the scene size
+        const WIDTH = window.innerWidth;
+        const HEIGHT = window.innerHeight;
+
+        // Set camera attributes
+        const VIEW_ANGLE = 45;
+        const ASPECT = WIDTH / HEIGHT;
+        const NEAR = 0.1;
+        const FAR = 1000;
+        // Create WebGL renderer, camera, and scene
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(WIDTH, HEIGHT);
+        document.body.appendChild(renderer.domElement);
+
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(VIEW_ANGLE, ASPECT, NEAR, FAR);
+
+        // Set camera position
+        camera.position.z = 5;
+
+        // Add camera to the scene
+        scene.add(camera);
+
+        // Create the vertices for the pentagon (5 vertices)
+        const vertices = new Float32Array([
+            0, 1, 0,        // Top vertex
+            0.95, 0.31, 0,  // Right upper vertex
+            0.59, -0.81, 0, // Right lower vertex
+            -0.59, -0.81, 0, // Left lower vertex
+            -0.95, 0.31, 0  // Left upper vertex
+        ]);
+
+        // Create a BufferGeometry and add the vertices
+        const geometry = new THREE.BufferGeometry();
+        geometry.setAttribute('position', new THREE.BufferAttribute(vertices, 3));
+
+        // Define the faces (triangles) for the polygon
+        const indices = new Uint16Array([
+            0, 1, 2,   // First triangle
+            0, 2, 3,   // Second triangle
+            0, 3, 4    // Third triangle
+        ]);
+        geometry.setIndex(new THREE.BufferAttribute(indices, 1));
+
+        // Apply vertex color (Red or Blue)
+        const material = new THREE.MeshBasicMaterial({
+            color: 0xff0000,  // Set the color to red (0x0000ff for blue)
+            side: THREE.DoubleSide,
+        });
+
+        // Create a mesh from the geometry and material
+        const polygonMesh = new THREE.Mesh(geometry, material);
+        scene.add(polygonMesh);
+
+        // Function to handle polygon rotation (spinning)
+        function animate() {
+            requestAnimationFrame(animate);
+
+            // Rotate the polygon slowly around its x and y axes
+            polygonMesh.rotation.x += 0.01;
+            polygonMesh.rotation.y += 0.01;
+
+            // Render the scene
+            renderer.render(scene, camera);
+        }
+
+        // Start animation
+        animate();
+    </script>
+</body>
+</html>
