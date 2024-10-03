@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>CS4406 Assignment Unit 4</title>
+    <style>
+      body {
+        margin: 0;
+      }
+      canvas {
+        display: block;
+      }
+    </style>
+  </head>
+  <body>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
+    <script>
+      // Scene, Camera, Renderer Setup
+      const scene = new THREE.Scene();
+      const camera = new THREE.PerspectiveCamera(
+        75,
+        window.innerWidth / window.innerHeight,
+        0.1,
+        1000
+      );
+      const renderer = new THREE.WebGLRenderer();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      document.body.appendChild(renderer.domElement);
+
+      // Create a Cube Geometry
+      const geometry = new THREE.BoxGeometry(1, 1, 1);
+
+      // Load Textures
+      const textureLoader = new THREE.TextureLoader();
+      const textures = [
+        textureLoader.load("/PR.jpg"), // Load first texture
+        textureLoader.load("/PR.jpg"), // Load second texture
+        textureLoader.load("/PR.jpg"), // Load third texture
+        textureLoader.load("/PR.jpg"), // Load fourth texture
+      ];
+
+      // Create materials using the loaded textures for each face
+      const materials = [
+        new THREE.MeshBasicMaterial({ map: textures[0] }), // Front face
+        new THREE.MeshBasicMaterial({ map: textures[1] }), // Back face
+        new THREE.MeshBasicMaterial({ map: textures[2] }), // Top face
+        new THREE.MeshBasicMaterial({ map: textures[3] }), // Bottom face
+        new THREE.MeshBasicMaterial({ map: textures[0] }), // Repeat Left face
+        new THREE.MeshBasicMaterial({ map: textures[1] }), // Repeat Right face
+      ];
+
+      // Create Mesh with Geometry and Materials
+      const cube = new THREE.Mesh(geometry, materials);
+      scene.add(cube);
+
+      // Add Lighting
+      const light = new THREE.DirectionalLight(0xffffff, 1);
+      light.position.set(0, 1, 1).normalize();
+      scene.add(light);
+
+      // Camera Position
+      camera.position.z = 3;
+
+      // Animation Function for Rotation
+      function animate() {
+        requestAnimationFrame(animate);
+
+        // Rotate the cube clockwise
+        cube.rotation.x += 0.01;
+        cube.rotation.y += 0.01;
+
+        renderer.render(scene, camera);
+      }
+
+      // Call the animation function
+      animate();
+
+      // Add Event Listeners for Arrow Key Controls
+      window.addEventListener("keydown", function (event) {
+        switch (event.key) {
+          case "ArrowLeft":
+            cube.rotation.y -= 0.1; // Rotate left
+            break;
+          case "ArrowRight":
+            cube.rotation.y += 0.1; // Rotate right
+            break;
+          case "ArrowUp":
+            cube.rotation.x -= 0.1; // Rotate up
+            break;
+          case "ArrowDown":
+            cube.rotation.x += 0.1; // Rotate down
+            break;
+        }
+      });
+    </script>
+  </body>
+</html>
