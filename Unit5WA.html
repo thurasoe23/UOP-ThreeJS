@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Methane Molecule</title>
+    <style>
+      body {
+        margin: 0;
+      }
+      canvas {
+        display: block;
+      }
+    </style>
+  </head>
+  <body>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128/examples/js/controls/OrbitControls.js"></script>
+    <script>
+      // Set up scene, camera, and renderer
+      const scene = new THREE.Scene();
+      const camera = new THREE.PerspectiveCamera(
+        75,
+        window.innerWidth / window.innerHeight,
+        0.1,
+        1000
+      );
+      const renderer = new THREE.WebGLRenderer();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      renderer.shadowMap.enabled = true;
+      document.body.appendChild(renderer.domElement);
+
+      // Add a green plane (floor)
+      const planeGeometry = new THREE.PlaneGeometry(20, 20);
+      const planeMaterial = new THREE.MeshStandardMaterial({ color: 0x00ff00 });
+      const plane = new THREE.Mesh(planeGeometry, planeMaterial);
+      plane.rotation.x = -Math.PI / 2;
+      plane.position.y = -2;
+      plane.receiveShadow = true;
+      scene.add(plane);
+
+      // Atom materials
+      const carbonMaterial = new THREE.MeshStandardMaterial({
+        color: 0xff0000,
+      }); // Red for Carbon
+      const hydrogenMaterial = new THREE.MeshStandardMaterial({
+        color: 0x0000ff,
+      }); // Blue for Hydrogen
+
+      // Create Carbon (central atom)
+      const carbonGeometry = new THREE.SphereGeometry(1, 32, 32);
+      const carbon = new THREE.Mesh(carbonGeometry, carbonMaterial);
+      carbon.position.set(0, 0, 0);
+      carbon.castShadow = true;
+      scene.add(carbon);
+
+      // Create Hydrogen atoms
+      const hydrogenGeometry = new THREE.SphereGeometry(0.5, 32, 32);
+      const hydrogenPositions = [
+        [2, 1, 0],
+        [-2, -1, 0],
+        [1, 0, 2],
+        [-1, 0, -2],
+      ];
+
+      hydrogenPositions.forEach((pos) => {
+        const hydrogen = new THREE.Mesh(hydrogenGeometry, hydrogenMaterial);
+        hydrogen.position.set(...pos);
+        hydrogen.castShadow = true;
+        scene.add(hydrogen);
+      });
+
+      // Function to create bond between two positions
+      function createBond(start, end) {
+        const bondMaterial = new THREE.MeshStandardMaterial({
+          color: 0xffffff,
+          emissive: 0xdddddd,
+        });
+        const bondGeometry = new THREE.CylinderGeometry(0.1, 0.1, 1, 32); // Cylinder height is 1 by default
+
+        const bond = new THREE.Mesh(bondGeometry, bondMaterial);
+
+        // Calculate the vector from start to end
+        const bondVec = new THREE.Vector3().subVectors(end, start);
+        const bondLength = bondVec.length(); // Calculate the distance between the atoms
+
+        // Calculate the midpoint and position the bond there
+        const bondMidpoint = new THREE.Vector3()
+          .addVectors(start, end)
+          .multiplyScalar(0.5);
+        bond.position.set(bondMidpoint.x, bondMidpoint.y, bondMidpoint.z);
+
+        // Align the bond along the vector between start and end
+        const axis = new THREE.Vector3(0, 1, 0); // Default axis for the cylinder (Y-axis)
+        bond.quaternion.setFromUnitVectors(axis, bondVec.clone().normalize()); // Rotate bond to align with the bond vector
+
+        // Set the bond length
+        bond.scale.set(1, bondLength / 1); // Scale bond in Y direction based on bond length
+
+        bond.castShadow = true;
+        scene.add(bond);
+      }
+
+      // Create bonds for all hydrogen atoms
+      hydrogenPositions.forEach((pos) => {
+        const hydrogenPos = new THREE.Vector3(...pos);
+        createBond(carbon.position, hydrogenPos); // Create a bond between carbon and each hydrogen atom
+      });
+
+      // Lighting
+      const ambientLight = new THREE.AmbientLight(0x404040); // Soft white ambient light
+      scene.add(ambientLight);
+
+      const pointLight = new THREE.PointLight(0xffffff, 1);
+      pointLight.position.set(5, 5, 5);
+      pointLight.castShadow = true;
+      scene.add(pointLight);
+
+      // Mouse Controls
+      const controls = new THREE.OrbitControls(camera, renderer.domElement);
+      camera.position.set(5, 5, 10);
+      controls.update();
+
+      // Render Loop
+      function animate() {
+        requestAnimationFrame(animate);
+        controls.update(); // Enable mouse interaction for rotation
+        renderer.render(scene, camera);
+      }
+
+      animate();
+    </script>
+  </body>
+</html>
