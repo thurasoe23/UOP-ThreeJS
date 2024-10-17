@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Earth and Moon with Eclipse Simulation</title>
+    <style>
+      body {
+        margin: 0;
+        overflow: hidden; /* Prevent scrolling */
+      }
+      canvas {
+        display: block;
+      }
+    </style>
+  </head>
+  <body>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script>
+      // Set up scene, camera, and renderer
+      const scene = new THREE.Scene();
+      const camera = new THREE.PerspectiveCamera(
+        75,
+        window.innerWidth / window.innerHeight,
+        0.1,
+        1000
+      );
+      const renderer = new THREE.WebGLRenderer();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      renderer.shadowMap.enabled = true;
+      document.body.appendChild(renderer.domElement);
+
+      // Load textures for Earth and Moon
+      const loader = new THREE.TextureLoader();
+
+      // Earth
+      const earthTexture = loader.load('/photos/WorldMap-A_non-Frame.png'); // path to your world texture 
+      const earthMaterial = new THREE.MeshStandardMaterial({ map: earthTexture });
+      const earth = new THREE.Mesh(new THREE.SphereGeometry(2, 64, 64), earthMaterial);
+      earth.castShadow = true;
+      scene.add(earth);
+
+      // Moon
+      const moonTexture = loader.load('/photos/Moonmap_from_clementine_data.png'); // path to your moon texture
+      const moonMaterial = new THREE.MeshStandardMaterial({ map: moonTexture });
+      const moon = new THREE.Mesh(new THREE.SphereGeometry(0.5, 64, 64), moonMaterial);
+      moon.castShadow = true;
+      scene.add(moon);
+
+      // Position camera
+      camera.position.set(10, 5, 10);
+      camera.lookAt(earth.position);
+
+      // Lighting to simulate sunlight, positioned to the right of the Earth
+      const sunlight = new THREE.PointLight(0xffffff, 1);
+      sunlight.position.set(10, 0, 0); // Light source to the right of the Earth
+      sunlight.castShadow = true;
+      scene.add(sunlight);
+
+      // Ambient light for slight background lighting (simulates scattered light in space)
+      const ambientLight = new THREE.AmbientLight(0x202020);
+      scene.add(ambientLight);
+
+      // Animation Loop
+      function animate() {
+        requestAnimationFrame(animate);
+
+        // Earth rotation (simulating day/night cycle)
+        earth.rotation.y += 0.001; // Slow rotation for Earth
+
+        // Moon rotation and orbit
+        const time = Date.now() * 0.001; // Time variable for smooth animation
+
+        // Moon's orbit around Earth
+        const moonOrbitRadius = 4;
+        moon.position.x = Math.cos(time) * moonOrbitRadius;
+        moon.position.z = Math.sin(time) * moonOrbitRadius;
+
+        // Moon rotation around its own axis
+        moon.rotation.y += 0.005; // Faster rotation for Moon to simulate its axial rotation
+
+        renderer.render(scene, camera);
+      }
+
+      animate();
+    </script>
+  </body>
+</html>
